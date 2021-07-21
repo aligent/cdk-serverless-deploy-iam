@@ -1,10 +1,7 @@
-# Aligent shared VPC stack
+# Aligent service deploy role
 
-This repository contains a stack which can be deployed into AWS accounts to provide a stable elastic IP for micro-services.
-Micro-services are then deployed into this VPC rather than creating their own.
-
-Previously, existing Magento VPCs have been used to provide egress networking for Lambda functions.
-This stack isolates the micro-services into their own VPC.
+This repository contains a stack which can be deployed into AWS accounts to provide a CloudFormation deploy role.
+Micro-services are then deployed referencing the role produced by this stack.
 
 This repository does not need to be forked, copied or imported. The intention is for it to be deployed *AS IS* into each environment.
 
