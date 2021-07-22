@@ -8,15 +8,19 @@ import {
    Effect 
 } from '@aws-cdk/aws-iam';
 
-class MicroserviceDeployRole extends cdk.Stack {
+const SERVICE_NAME = process.env.SERVICE_NAME
+const STACK_SUFFIX = '-iam-bootstrap'
+
+class ServiceIAMBootstrap extends cdk.Stack {
 
      constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
           super(scope, id, props);
+
+          // Version will be used for auditing which role is being used by projects.
           const version = '1'
-          const serviceName = 'polygon-akeneo-product'
-          const region = 'ap-southeast-2'
-          const accountId = '341263810002'
-          const stage = 'staging'
+          const serviceName = cdk.Stack.of(this).stackName.replace(STACK_SUFFIX,'');
+          const accountId = cdk.Stack.of(this).account;
+          const region = cdk.Stack.of(this).region
 
           const s3BucketResources = [`arn:aws:s3:::${serviceName}*`]
           const s3ObjectResources = [`arn:aws:s3:::${serviceName}*/*`]
@@ -25,7 +29,7 @@ class MicroserviceDeployRole extends cdk.Stack {
           const stepFunctionResources = [`arn:aws:states:${region}:${accountId}:stateMachine:${serviceName}*`]
           const iamResources = [`arn:aws:iam::${accountId}:role/${serviceName}*`]
 
-          const serviceRole = new Role(this, `MicroserviceDeployServiceRole-V${version}`, {
+          const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
           });
 
@@ -138,16 +142,20 @@ class MicroserviceDeployRole extends cdk.Stack {
                })
           );
 
-          new cdk.CfnOutput(this, 'roleARN', {
+          new cdk.CfnOutput(this, 'DeployRoleArn', {
                value: serviceRole.roleArn,
-               description: 'The name of the s3 bucket',
-               exportName: 'avatarsBucket',
+               description: 'The ARN of the CloudFormation service role',
+               exportName: 'DeployRoleArn',
+          });
+
+          new cdk.CfnOutput(this, 'BootstrapVersion', {
+               value: version,
+               description: 'The version of the bootstrap resources that are currently provisioned in this stack',
+               exportName: 'BootstrapVersion',
           });
      }
 
 }
 
-
 const app = new cdk.App();
-
-new MicroserviceDeployRole(app, 'service-deploy-role', {env: {account: "341263810002", region: "ap-southeast-2"}, description: "Implements an IAM role for use when deploying serverless applications into this account"});
+new ServiceIAMBootstrap(app, `${SERVICE_NAME}-${STACK_SUFFIX}`, { description: "This stack includes resources needed to deploy Serverless apps into this environment"});
