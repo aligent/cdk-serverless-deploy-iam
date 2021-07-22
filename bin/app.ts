@@ -5,7 +5,9 @@ import {
    Role, 
    ServicePrincipal, 
    PolicyStatement, 
-   Effect 
+   Effect,
+   Group,
+   User
 } from '@aws-cdk/aws-iam';
 
 const SERVICE_NAME = process.env.SERVICE_NAME
@@ -22,12 +24,16 @@ class ServiceDeployBootstrap extends cdk.Stack {
           const accountId = cdk.Stack.of(this).account;
           const region = cdk.Stack.of(this).region
 
+          const cloudFormationResources = [`arn:aws:cloudformation:${region}:${accountId}:stack/${serviceName}*`];
           const s3BucketResources = [`arn:aws:s3:::${serviceName}*`]
           const s3ObjectResources = [`arn:aws:s3:::${serviceName}*/*`]
           const cloudWatchResources = [`arn:aws:logs:${region}:${accountId}:log-group:/aws/lambda/${serviceName}*`]
           const lambdaResources = [`arn:aws:lambda:${region}:${accountId}:function:${serviceName}*`]
           const stepFunctionResources = [`arn:aws:states:${region}:${accountId}:stateMachine:${serviceName}*`]
           const iamResources = [`arn:aws:iam::${accountId}:role/${serviceName}*`]
+          const cloudFormationStackResource = ``
+          
+          const s3DeploymentResources = [`arn:aws:s3:::${serviceName}*deploymentbucket*`]
 
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
@@ -142,6 +148,77 @@ class ServiceDeployBootstrap extends cdk.Stack {
                     ]
                })
           );
+
+          const deployUser = new User(this, 'DeployUser', {
+               userName: `${serviceName}-deployer`,
+          })
+
+          const deployGroup = new Group(this, `${serviceName}-deployers`);
+
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: ['*'],
+                    actions: [
+                         "cloudformation:ValidateTemplate",
+                    ]
+               })
+          );
+
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: cloudFormationResources,
+                    actions: [
+                         "cloudformation:CreateStack",
+                         "cloudformation:DescribeStacks",
+                         "cloudformation:DeleteStack",
+                         "cloudformation:DescribeStackEvents",
+                         "cloudformation:UpdateStack",
+                         "cloudformation:ListStackResources",
+                         "cloudformation:DescribeStackResource"
+                    ]
+               })
+          );
+
+          // Serverless uses this to skip functions which have not changed
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: lambdaResources,
+                    actions: [
+                         "lambda:GetFunction",
+                    ]
+               })
+          );
+
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: [serviceRole.roleArn],
+                    actions: [
+                         "iam:PassRole"
+                    ]
+               })
+          );
+          
+          // Deployer user needs to be able to manage the deployment bucket
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: s3DeploymentResources,
+                    actions: [            
+                         "s3:*",
+                    ]
+               })
+          );
+
+          deployUser.addToGroup(deployGroup);
+
+          new cdk.CfnOutput(this, 'DeployUserName', {
+               description: 'PublisherUser',
+               value: deployUser.userName,
+          });
 
           new cdk.CfnOutput(this, 'DeployRoleArn', {
                value: serviceRole.roleArn,

@@ -30,3 +30,8 @@ Use the following command to deploy this into an environment:
 ```
 AWS_REGION=<AWS_REGION> SERVICE_NAME=<SERVICE_NAME> npx cdk deploy --profile <AWS_PROFILE>
 ```
+
+### Next Steps
+Once this finishes a user will be created (ARN in stack output). This user will have the appropriate permissions to assume the CloudFormation role and deploy the service.
+
+Create AWS credentials for the user and add these as sensitive variables to the project's build pipeline.
