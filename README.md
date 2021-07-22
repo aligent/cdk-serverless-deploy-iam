@@ -1,4 +1,4 @@
-# Service IAM bootstrap stack
+# Service deploy bootstrap stack
 
 ## Introduction
 This repository contains a stack which can be deployed into an AWS account to provide IAM resources required by [Aligent Serverless based microservices](https://github.com/aligent/serverless-aws-nodejs-service-template).
@@ -28,5 +28,5 @@ The actual Serverless app can then be created and completely managed by the CI u
 Use the following command to deploy this into an environment:
 
 ```
-SERVICE_NAME=<SERVICE_NAME> npx cdk deploy --profile <AWS_PROFILE> --region <AWS_REGION>
+AWS_REGION=<AWS_REGION> SERVICE_NAME=<SERVICE_NAME> npx cdk deploy --profile <AWS_PROFILE>
 ```

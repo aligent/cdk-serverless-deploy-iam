@@ -9,9 +9,9 @@ import {
 } from '@aws-cdk/aws-iam';
 
 const SERVICE_NAME = process.env.SERVICE_NAME
-const STACK_SUFFIX = '-iam-bootstrap'
+const STACK_SUFFIX = '-deploy-bootstrap'
 
-class ServiceIAMBootstrap extends cdk.Stack {
+class ServiceDeployBootstrap extends cdk.Stack {
 
      constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
           super(scope, id, props);
@@ -158,4 +158,4 @@ class ServiceIAMBootstrap extends cdk.Stack {
 }
 
 const app = new cdk.App();
-new ServiceIAMBootstrap(app, `${SERVICE_NAME}-${STACK_SUFFIX}`, { description: "This stack includes resources needed to deploy Serverless apps into this environment"});
+new ServiceDeployBootstrap(app, `${SERVICE_NAME}${STACK_SUFFIX}`, { description: "This stack includes IAM resources needed to deploy Serverless apps into this environment"});
