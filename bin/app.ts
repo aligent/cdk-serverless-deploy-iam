@@ -137,6 +137,7 @@ class ServiceDeployBootstrap extends cdk.Stack {
                     actions: [            
                          "states:CreateStateMachine",
                          "states:DeleteStateMachine",
+                         "states:DescribeStateMachine",
                          "states:TagResource",
                     ]
                })
