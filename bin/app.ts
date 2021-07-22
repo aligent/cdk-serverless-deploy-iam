@@ -12,18 +12,18 @@ class MicroserviceDeployRole extends cdk.Stack {
 
      constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
           super(scope, id, props);
-          const version = '0.0.1'
+          const version = '1'
           const serviceName = 'polygon-akeneo-product'
           const region = 'ap-southeast-2'
-          const accountId = '00000000'
-          const stage = ''
+          const accountId = '341263810002'
+          const stage = 'staging'
 
-          const s3BucketResources = [`arn:aws:s3:${region}:${accountId}:${serviceName}*`]
-          const s3ObjectResources = [`arn:aws:s3:${region}:${accountId}:${serviceName}*/*`]
-          const cloudFormationResources = [`arn:aws:cloudformation:${region}:${accountId}:stack/${serviceName}-${stage}*`]
-          const cloudWatchResources = [`arn:aws:logs:${region}:${accountId}:log-group:${serviceName}*/*`]
+          const s3BucketResources = [`arn:aws:s3:::${serviceName}*`]
+          const s3ObjectResources = [`arn:aws:s3:::${serviceName}*/*`]
+          const cloudWatchResources = [`arn:aws:logs:${region}:${accountId}:log-group:/aws/lambda/${serviceName}*`]
           const lambdaResources = [`arn:aws:lambda:${region}:${accountId}:function:${serviceName}*`]
           const stepFunctionResources = [`arn:aws:states:${region}:${accountId}:stateMachine:${serviceName}*`]
+          const iamResources = [`arn:aws:iam::${accountId}:role/${serviceName}*`]
 
           const serviceRole = new Role(this, `MicroserviceDeployServiceRole-V${version}`, {
                assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
@@ -47,29 +47,11 @@ class MicroserviceDeployRole extends cdk.Stack {
                     effect: Effect.ALLOW,
                     resources: s3BucketResources,
                     actions: [            
-                         "s3:DeleteBucket",
-                         "s3:CreateBucket",
+                         "s3:*",
                     ]
                })
           );
 
-          // CloudFormation policy 
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: cloudFormationResources,
-                    actions: [            
-                         "cloudformation:CreateStack",
-                         "cloudformation:UpdateStack",
-                         "cloudformation:ValidateTemplate",
-                         "cloudformation:DeleteStack",
-                         "cloudformation:DescribeStackEvents",
-                         "cloudformation:DescribeStacks",
-                         "cloudformation:GetStackPolicy",
-                         "cloudformation:ListStackResources",
-                    ]
-               })
-          );
 
           // CloudWatch policy
           serviceRole.addToPolicy(
@@ -78,10 +60,16 @@ class MicroserviceDeployRole extends cdk.Stack {
                     resources: cloudWatchResources,
                     actions: [            
                          "logs:CreateLogGroup",
+                         "logs:DescribeLogGroup",
                          "logs:DeleteLogGroup",
+                         "logs:CreateLogStream",
+                         "logs:DescribeLogStreams",
+                         "logs:DeleteLogStream",
+                         "logs:FilterLogEvents"
                     ]
                })
           );
+
 
           // Lambda policy
           serviceRole.addToPolicy(
@@ -89,19 +77,53 @@ class MicroserviceDeployRole extends cdk.Stack {
                     effect: Effect.ALLOW,
                     resources: lambdaResources,
                     actions: [            
+                         "lambda:GetFunction",
                          "lambda:CreateFunction",
                          "lambda:DeleteFunction",
-                         "lambda:RemovePermission",
-                         "lambda:AddPermission",
-                         "lambda:GetFunction",
-                         "lambda:GetFunctionCodeSigningConfig",
+                         "lambda:UpdateFunctionConfiguration",
+                         "lambda:UpdateFunctionCode",
                          "lambda:ListVersionsByFunction",
                          "lambda:PublishVersion",
+                         "lambda:CreateAlias",
+                         "lambda:DeleteAlias",
+                         "lambda:UpdateAlias",
+                         "lambda:GetFunctionConfiguration",
+                         "lambda:AddPermission",
+                         "lambda:RemovePermission",
+                         "lambda:InvokeFunction"
+                    ]
+               })
+          );
+
+          // IAM policy
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: iamResources,
+                    actions: [            
+                         "iam:PassRole",
+                         "iam:CreateRole",
+                         "iam:GetRole",
+                         "iam:DeleteRole",
+                         "iam:GetRolePolicy",
+                         "iam:DeleteRolePolicy",
+                         "iam:PutRolePolicy",
                     ]
                })
           );
 
           // DynamoDB policy
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: stepFunctionResources,
+                    actions: [            
+                         "dynamodb:CreateTable",
+                         "dynamodb:UpdateTable",
+                         "dynamodb:DeleteTable",
+                    ]
+               })
+          );
 
           // StepFunctions policy 
           serviceRole.addToPolicy(
@@ -111,14 +133,21 @@ class MicroserviceDeployRole extends cdk.Stack {
                     actions: [            
                          "states:CreateStateMachine",
                          "states:DeleteStateMachine",
+                         "states:TagResource",
                     ]
                })
           );
 
+          new cdk.CfnOutput(this, 'roleARN', {
+               value: serviceRole.roleArn,
+               description: 'The name of the s3 bucket',
+               exportName: 'avatarsBucket',
+          });
      }
+
 }
 
 
 const app = new cdk.App();
 
-new MicroserviceDeployRole(app, 'cloudformation-deploy-role-stack', {description: "Implements an IAM role for use when deploying services in this account"});
+new MicroserviceDeployRole(app, 'service-deploy-role', {env: {account: "341263810002", region: "ap-southeast-2"}, description: "Implements an IAM role for use when deploying serverless applications into this account"});

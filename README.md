@@ -1,6 +1,6 @@
 # Aligent service deploy role
 
-This repository contains a stack which can be deployed into AWS accounts to provide a CloudFormation deploy role.
+This repository contains a stack which can be deployed into AWS accounts to provide a CloudFormation deploy role with the required permissions to deploy a standard Serverless application.
 Micro-services are then deployed referencing the role produced by this stack.
 
 This repository does not need to be forked, copied or imported. The intention is for it to be deployed *AS IS* into each environment.
