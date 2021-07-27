@@ -1,4 +1,4 @@
-# Service deploy bootstrap stack
+# Serverless deploy bootstrap stack
 
 ## Introduction
 This repository contains a stack which can be deployed into an AWS account to provide IAM resources required by [Aligent Serverless based microservices](https://github.com/aligent/serverless-aws-nodejs-service-template).
