@@ -20,6 +20,7 @@ class ServiceDeployBootstrap extends cdk.Stack {
           super(scope, id, props);
 
           // Version will be used for auditing which role is being used by projects.
+          // This should only be updated for BREAKING changes.
           const version = '1'
           const serviceName = cdk.Stack.of(this).stackName.replace(STACK_SUFFIX,'');
           const accountId = cdk.Stack.of(this).account;
@@ -31,10 +32,11 @@ class ServiceDeployBootstrap extends cdk.Stack {
           const cloudWatchResources = [`arn:aws:logs:${region}:${accountId}:log-group:/aws/lambda/${serviceName}*`]
           const lambdaResources = [`arn:aws:lambda:${region}:${accountId}:function:${serviceName}*`]
           const stepFunctionResources = [`arn:aws:states:${region}:${accountId}:stateMachine:${serviceName}*`]
+          const dynamoDbResources = [`arn:aws:dynamodb:${region}:${accountId}:table/${serviceName}*`] 
           const iamResources = [`arn:aws:iam::${accountId}:role/${serviceName}*`]
           const cloudFormationStackResource = ``
           
-          const s3DeploymentResources = [`arn:aws:s3:::${serviceName}*deploymentbucket*`]
+          const s3DeploymentResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*`]
           const ssmDeploymentResources = [`arn:aws:ssm:${region}:${accountId}:parameter/${serviceName}*`]
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
@@ -63,6 +65,18 @@ class ServiceDeployBootstrap extends cdk.Stack {
                })
           );
 
+          // Secutiry Groups
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: ['*'],
+                    actions: [            
+                         "ec2:DescribeSecurityGroups",
+                         "ec2:DescribeSubnets",
+                         "ec2:DescribeVpcs"
+                    ]
+               })
+          );
 
           // CloudWatch policy
           serviceRole.addToPolicy(
@@ -106,6 +120,37 @@ class ServiceDeployBootstrap extends cdk.Stack {
                })
           );
 
+
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: ['*'],
+                    actions: [            
+                         "lambda:GetEventSourceMapping",
+                         "lambda:ListEventSourceMappings"
+                    ]
+               })
+          );
+
+
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    conditions: {
+                         "StringLike": {
+                              "lambda:FunctionArn": lambdaResources[0]
+                         }
+                    },
+                    resources: ['*'],
+                    actions: [            
+                         "lambda:DeleteEventSourceMapping",
+                         "lambda:UpdateEventSourceMapping",
+                         "lambda:CreateEventSourceMapping",
+                    ]
+               })
+          );
+
+
           // IAM policy
           serviceRole.addToPolicy(
                new PolicyStatement({
@@ -127,8 +172,9 @@ class ServiceDeployBootstrap extends cdk.Stack {
           serviceRole.addToPolicy(
                new PolicyStatement({
                     effect: Effect.ALLOW,
-                    resources: stepFunctionResources,
+                    resources: dynamoDbResources,
                     actions: [            
+                         "dynamodb:DescribeTable",
                          "dynamodb:CreateTable",
                          "dynamodb:UpdateTable",
                          "dynamodb:DeleteTable",
