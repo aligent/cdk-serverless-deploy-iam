@@ -35,7 +35,7 @@ class ServiceDeployBootstrap extends cdk.Stack {
           const cloudFormationStackResource = ``
           
           const s3DeploymentResources = [`arn:aws:s3:::${serviceName}*deploymentbucket*`]
-
+          const ssmDeploymentResources = [`arn:aws:ssm:${region}:${accountId}:parameter/${serviceName}*`]
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
           });
@@ -213,6 +213,28 @@ class ServiceDeployBootstrap extends cdk.Stack {
                     ]
                })
           );
+
+
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: ['*'],
+                    actions: [            
+                         "ssm:DescribeParameters",
+                    ]
+               })
+          );
+
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: ssmDeploymentResources,
+                    actions: [            
+                         "ssm:GetParameter",
+                    ]
+               })
+          );
+
 
           deployUser.addToGroup(deployGroup);
 
