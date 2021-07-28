@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from '@aws-cdk/core';
+import * as ssm from '@aws-cdk/aws-ssm';
 import { 
    ManagedPolicy, 
    Role, 
@@ -230,6 +231,14 @@ class ServiceDeployBootstrap extends cdk.Stack {
                value: version,
                description: 'The version of the bootstrap resources that are currently provisioned in this stack',
                exportName: 'BootstrapVersion',
+          });
+
+          const parameterName = `/serverless-deploy-bootstrap/${serviceName}/version`;
+
+          new ssm.StringParameter(this, 'ServerlessDeployBootstrapVersion', {
+               parameterName: parameterName,
+               description: 'The version of the serverless-deploy-bootrap resources',
+               stringValue: version
           });
      }
 
