@@ -28,7 +28,7 @@ The actual Serverless app can then be created and completely managed by the CI u
 Use the following command to deploy this into an environment:
 
 ```
-AWS_REGION=<AWS_REGION> SERVICE_NAME=<SERVICE_NAME> npx cdk deploy --profile <AWS_PROFILE>
+SHARED_VPC_ID=<OPTIONAL> AWS_REGION=<AWS_REGION> SERVICE_NAME=<SERVICE_NAME> npx cdk deploy --profile <AWS_PROFILE>
 ```
 
 ### Next Steps

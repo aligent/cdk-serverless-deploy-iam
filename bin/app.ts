@@ -12,6 +12,7 @@ import {
 } from '@aws-cdk/aws-iam';
 
 const SERVICE_NAME = process.env.SERVICE_NAME
+const SHARED_VPC_ID = process.env.SHARED_VPC_ID
 const STACK_SUFFIX = '-deploy-bootstrap'
 
 class ServiceDeployBootstrap extends cdk.Stack {
@@ -65,18 +66,38 @@ class ServiceDeployBootstrap extends cdk.Stack {
                })
           );
 
-          // Secutiry Groups
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: ['*'],
-                    actions: [            
-                         "ec2:DescribeSecurityGroups",
-                         "ec2:DescribeSubnets",
-                         "ec2:DescribeVpcs"
-                    ]
-               })
-          );
+
+          if (SHARED_VPC_ID) {
+               // Secutiry Groups
+               serviceRole.addToPolicy(
+                    new PolicyStatement({
+                         effect: Effect.ALLOW,
+                         resources: ['*'],
+                         actions: [            
+                              "ec2:CreateSecurityGroup",
+                              "ec2:DescribeSecurityGroups",
+                              "ec2:DescribeSubnets",
+                              "ec2:DescribeVpcs",
+                              "ec2:createTags"
+                         ]
+                    })
+               );
+               serviceRole.addToPolicy(
+                    new PolicyStatement({
+                         effect: Effect.ALLOW,
+                         resources: ['*'],
+                         conditions: {
+                              "StringEquals": {
+                                   "ec2:Vpc": `arn:aws:ec2:${region}:${accountId}vpc:/${SHARED_VPC_ID}`
+                              }
+                         },
+                         actions: [
+                              "ec2:DeleteSecurityGroup",
+                         ]
+                    })
+               );
+          }
+
 
           // CloudWatch policy
           serviceRole.addToPolicy(
@@ -164,6 +185,8 @@ class ServiceDeployBootstrap extends cdk.Stack {
                          "iam:GetRolePolicy",
                          "iam:DeleteRolePolicy",
                          "iam:PutRolePolicy",
+                         "iam:DetachRolePolicy",
+                         "iam:AttachRolePolicy",
                     ]
                })
           );
