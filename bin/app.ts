@@ -36,7 +36,7 @@ class ServiceDeployBootstrap extends cdk.Stack {
           const dynamoDbResources = [`arn:aws:dynamodb:${region}:${accountId}:table/${serviceName}*`] 
           const iamResources = [`arn:aws:iam::${accountId}:role/${serviceName}*`]
           const cloudFormationStackResource = ``
-          
+          const eventBridgeResources = [`arn:aws:events:${region}:${accountId}:rule/${serviceName}*`]
           const s3DeploymentResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*`]
           const ssmDeploymentResources = [`arn:aws:ssm:${region}:${accountId}:parameter/${serviceName}*`]
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
@@ -216,6 +216,22 @@ class ServiceDeployBootstrap extends cdk.Stack {
                          "states:DeleteStateMachine",
                          "states:DescribeStateMachine",
                          "states:TagResource",
+                    ]
+               })
+          );
+
+          // EventBridge policy
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: eventBridgeResources,
+                    actions: [
+                         "events:EnableRule",
+                         "events:PutRule",
+                         "events:DescribeRule",
+                         "events:ListRules",
+                         "events:DisableRule",
+                         "events:PutTargets"
                     ]
                })
           );
