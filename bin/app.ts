@@ -13,9 +13,9 @@ import {
 
 const SERVICE_NAME = process.env.SERVICE_NAME
 const SHARED_VPC_ID = process.env.SHARED_VPC_ID
-const STACK_SUFFIX = '-deploy-bootstrap'
+const STACK_SUFFIX = '-deploy-iam'
 
-class ServiceDeployBootstrap extends cdk.Stack {
+class ServiceDeployIAM extends cdk.Stack {
 
      constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
           super(scope, id, props);
@@ -319,17 +319,17 @@ class ServiceDeployBootstrap extends cdk.Stack {
                exportName: 'DeployRoleArn',
           });
 
-          new cdk.CfnOutput(this, 'BootstrapVersion', {
+          new cdk.CfnOutput(this, 'Version', {
                value: version,
-               description: 'The version of the bootstrap resources that are currently provisioned in this stack',
-               exportName: 'BootstrapVersion',
+               description: 'The version of the resources that are currently provisioned in this stack',
+               exportName: 'Version',
           });
 
-          const parameterName = `/serverless-deploy-bootstrap/${serviceName}/version`;
+          const parameterName = `/serverless-deploy-iam/${serviceName}/version`;
 
-          new ssm.StringParameter(this, 'ServerlessDeployBootstrapVersion', {
+          new ssm.StringParameter(this, 'ServerlessDeployIAMVersion', {
                parameterName: parameterName,
-               description: 'The version of the serverless-deploy-bootrap resources',
+               description: 'The version of the serverless-deploy-iam resources',
                stringValue: version
           });
      }
@@ -337,4 +337,4 @@ class ServiceDeployBootstrap extends cdk.Stack {
 }
 
 const app = new cdk.App();
-new ServiceDeployBootstrap(app, `${SERVICE_NAME}${STACK_SUFFIX}`, { description: "This stack includes IAM resources needed to deploy Serverless apps into this environment"});
+new ServiceDeployIAM(app, `${SERVICE_NAME}${STACK_SUFFIX}`, { description: "This stack includes IAM resources needed to deploy Serverless apps into this environment"});
