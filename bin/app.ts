@@ -332,13 +332,11 @@ class ServiceDeployIAM extends cdk.Stack {
           new cdk.CfnOutput(this, 'DeployRoleArn', {
                value: serviceRole.roleArn,
                description: 'The ARN of the CloudFormation service role',
-               exportName: 'DeployRoleArn',
           });
 
           new cdk.CfnOutput(this, 'Version', {
                value: version,
                description: 'The version of the resources that are currently provisioned in this stack',
-               exportName: 'Version',
           });
 
           const parameterName = `/serverless-deploy-iam/${serviceName}/version`;
