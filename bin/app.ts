@@ -37,6 +37,7 @@ class ServiceDeployIAM extends cdk.Stack {
           const iamResources = [`arn:aws:iam::${accountId}:role/${serviceName}*`]
           const cloudFormationStackResource = ``
           const eventBridgeResources = [`arn:aws:events:${region}:${accountId}:rule/${serviceName}*`]
+          const apiGatewayResources = [`arn:aws:apigateway:${region}::/*`]
           const s3DeploymentResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*`]
           const ssmDeploymentResources = [`arn:aws:ssm:${region}:${accountId}:parameter/${serviceName}*`]
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
@@ -232,6 +233,17 @@ class ServiceDeployIAM extends cdk.Stack {
                          "events:ListRules",
                          "events:DisableRule",
                          "events:PutTargets"
+                    ]
+               })
+          );
+
+          // APIGateway policy
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: apiGatewayResources,
+                    actions: [
+                         "apigateway:*",
                     ]
                })
           );
