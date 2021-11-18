@@ -37,6 +37,7 @@ class ServiceDeployIAM extends cdk.Stack {
           const iamResources = [`arn:aws:iam::${accountId}:role/${serviceName}*`]
           const cloudFormationStackResource = ``
           const eventBridgeResources = [`arn:aws:events:${region}:${accountId}:rule/${serviceName}*`]
+          const apiGatewayResources = [`arn:aws:apigateway:${region}::/*`]
           const s3DeploymentResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*`]
           const s3DeploymentObjectResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*/*`]
           const ssmDeploymentResources = [`arn:aws:ssm:${region}:${accountId}:parameter/${serviceName}*`]
@@ -248,6 +249,17 @@ class ServiceDeployIAM extends cdk.Stack {
                })
           );
 
+          // APIGateway policy
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: apiGatewayResources,
+                    actions: [
+                         "apigateway:*",
+                    ]
+               })
+          );
+
           const deployUser = new User(this, 'DeployUser', {
                userName: `${serviceName}-deployer`,
           })
@@ -345,13 +357,11 @@ class ServiceDeployIAM extends cdk.Stack {
           new cdk.CfnOutput(this, 'DeployRoleArn', {
                value: serviceRole.roleArn,
                description: 'The ARN of the CloudFormation service role',
-               exportName: 'DeployRoleArn',
           });
 
           new cdk.CfnOutput(this, 'Version', {
                value: version,
                description: 'The version of the resources that are currently provisioned in this stack',
-               exportName: 'Version',
           });
 
           const parameterName = `/serverless-deploy-iam/${serviceName}/version`;
