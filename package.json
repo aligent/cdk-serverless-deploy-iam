@@ -1,5 +1,5 @@
 {
-  "name": "@aligent/serverless-deploy-iam",
+  "name": "@aligent/cdk-serverless-deploy-iam",
   "version": "0.1.0",
   "bin": {
     "app": "bin/app.js"
