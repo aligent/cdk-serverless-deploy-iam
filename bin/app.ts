@@ -55,7 +55,8 @@ class ServiceDeployIAM extends cdk.Stack {
                          "s3:DeleteBucket",
                          "s3:GetBucketPolicy",
                          "s3:PutBucketPolicy",
-                         "s3:DeleteBucketPolicy"
+                         "s3:DeleteBucketPolicy",
+                         "s3:ListBucket"
                     ]
                })
           );
