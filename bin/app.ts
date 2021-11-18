@@ -51,7 +51,11 @@ class ServiceDeployIAM extends cdk.Stack {
                     effect: Effect.ALLOW,
                     resources: s3DeploymentResources,
                     actions: [
-                         "s3:*",
+                         "s3:CreateBucket",
+                         "s3:DeleteBucket",
+                         "s3:GetBucketPolicy",
+                         "s3:PutBucketPolicy",
+                         "s3:DeleteBucketPolicy"
                     ]
                })
           );
