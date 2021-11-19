@@ -39,10 +39,27 @@ class ServiceDeployIAM extends cdk.Stack {
           const eventBridgeResources = [`arn:aws:events:${region}:${accountId}:rule/${serviceName}*`]
           const apiGatewayResources = [`arn:aws:apigateway:${region}::/*`]
           const s3DeploymentResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*`]
+          const s3DeploymentObjectResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*/*`]
           const ssmDeploymentResources = [`arn:aws:ssm:${region}:${accountId}:parameter/${serviceName}*`]
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
           });
+
+          // S3 Deployment Bucket managment
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: s3DeploymentResources,
+                    actions: [
+                         "s3:CreateBucket",
+                         "s3:DeleteBucket",
+                         "s3:GetBucketPolicy",
+                         "s3:PutBucketPolicy",
+                         "s3:DeleteBucketPolicy",
+                         "s3:ListBucket"
+                    ]
+               })
+          );
 
           // S3 object policy 
           serviceRole.addToPolicy(
@@ -301,13 +318,14 @@ class ServiceDeployIAM extends cdk.Stack {
                })
           );
           
-          // Deployer user needs to be able to manage the deployment bucket
+          // Deployment bucket object managment
           deployGroup.addToPolicy(
                new PolicyStatement({
                     effect: Effect.ALLOW,
-                    resources: s3DeploymentResources,
-                    actions: [            
-                         "s3:*",
+                    resources: s3DeploymentObjectResources,
+                    actions: [
+                         "s3:PutObject",
+                         "s3:DeleteObject",
                     ]
                })
           );
