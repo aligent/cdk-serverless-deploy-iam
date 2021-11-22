@@ -265,6 +265,21 @@ class ServiceDeployIAM extends cdk.Stack {
                })
           );
 
+
+          // SNS policy
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: snsResources,
+                    actions: [
+                         "sns:GetTopicAttributes",
+                         "sns:CreateTopic",
+                         "sns:DeleteTopic",
+                         "sns:Subscribe",
+                    ]
+               })
+          );
+
           const deployUser = new User(this, 'DeployUser', {
                userName: `${serviceName}-deployer`,
           })
