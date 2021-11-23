@@ -41,6 +41,7 @@ class ServiceDeployIAM extends cdk.Stack {
           const s3DeploymentResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*`]
           const s3DeploymentObjectResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*/*`]
           const ssmDeploymentResources = [`arn:aws:ssm:${region}:${accountId}:parameter/${serviceName}*`]
+          const snsResources = [`arn:aws:sns:${region}:${accountId}:${serviceName}*`]
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
           });
