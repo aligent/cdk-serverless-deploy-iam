@@ -37,6 +37,7 @@ class ServiceDeployIAM extends cdk.Stack {
           const eventBridgeResources = [`arn:aws:events:${region}:${accountId}:rule/${serviceName}*`]
           const apiGatewayResources = [`arn:aws:apigateway:${region}::/*`]
           const ssmDeploymentResources = [`arn:aws:ssm:${region}:${accountId}:parameter/${serviceName}*`]
+          const snsResources = [`arn:aws:sns:${region}:${accountId}:${serviceName}*`]
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
           });
@@ -238,6 +239,21 @@ class ServiceDeployIAM extends cdk.Stack {
                     resources: apiGatewayResources,
                     actions: [
                          "apigateway:*",
+                    ]
+               })
+          );
+
+
+          // SNS policy
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: snsResources,
+                    actions: [
+                         "sns:GetTopicAttributes",
+                         "sns:CreateTopic",
+                         "sns:DeleteTopic",
+                         "sns:Subscribe",
                     ]
                })
           );
