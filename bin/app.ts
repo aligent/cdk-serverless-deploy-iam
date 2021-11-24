@@ -28,58 +28,35 @@ class ServiceDeployIAM extends cdk.Stack {
           const region = cdk.Stack.of(this).region
 
           const cloudFormationResources = [`arn:aws:cloudformation:${region}:${accountId}:stack/${serviceName}*`];
-          const s3BucketResources = [`arn:aws:s3:::${serviceName}*`]
-          const s3ObjectResources = [`arn:aws:s3:::${serviceName}*/*`]
+          const s3BucketResources = [`arn:aws:s3:::${serviceName}*`, `arn:aws:s3:::${serviceName}*/*`]
           const cloudWatchResources = [`arn:aws:logs:${region}:${accountId}:log-group:/aws/lambda/${serviceName}*`]
           const lambdaResources = [`arn:aws:lambda:${region}:${accountId}:function:${serviceName}*`]
           const stepFunctionResources = [`arn:aws:states:${region}:${accountId}:stateMachine:${serviceName}*`]
           const dynamoDbResources = [`arn:aws:dynamodb:${region}:${accountId}:table/${serviceName}*`] 
           const iamResources = [`arn:aws:iam::${accountId}:role/${serviceName}*`]
-          const cloudFormationStackResource = ``
           const eventBridgeResources = [`arn:aws:events:${region}:${accountId}:rule/${serviceName}*`]
           const apiGatewayResources = [`arn:aws:apigateway:${region}::/*`]
-          const s3DeploymentResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*`]
-          const s3DeploymentObjectResources = [`arn:aws:s3:::${serviceName}*serverlessdeployment*/*`]
           const ssmDeploymentResources = [`arn:aws:ssm:${region}:${accountId}:parameter/${serviceName}*`]
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
           });
 
-          // S3 Deployment Bucket managment
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: s3DeploymentResources,
-                    actions: [
-                         "s3:CreateBucket",
-                         "s3:DeleteBucket",
-                         "s3:GetBucketPolicy",
-                         "s3:PutBucketPolicy",
-                         "s3:DeleteBucketPolicy",
-                         "s3:ListBucket"
-                    ]
-               })
-          );
-
-          // S3 object policy 
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: s3ObjectResources,
-                    actions: [            
-                         "s3:PutObject",
-                         "s3:DeleteObject",
-                    ]
-               })
-          );
-
-          // S3 bucket policy 
+          // S3 bucket policy
           serviceRole.addToPolicy(
                new PolicyStatement({
                     effect: Effect.ALLOW,
                     resources: s3BucketResources,
-                    actions: [            
-                         "s3:*",
+                    actions: [
+                         "s3:*"
+                    ]
+               })
+          );
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: ['*'],
+                    actions: [
+                         "s3:ListAllMyBuckets",
                     ]
                })
           );
@@ -318,17 +295,26 @@ class ServiceDeployIAM extends cdk.Stack {
                })
           );
           
-          // Deployment bucket object managment
+          // S3 bucket policy
           deployGroup.addToPolicy(
                new PolicyStatement({
                     effect: Effect.ALLOW,
-                    resources: s3DeploymentObjectResources,
+                    resources: s3BucketResources,
                     actions: [
-                         "s3:PutObject",
-                         "s3:DeleteObject",
-                         "s3:GetObject",
                          "s3:ListBucket",
+                         "s3:DeleteObject",
+                         "s3:PutObject",
+                         "s3:GetObject",
                          "s3:GetBucketLocation"
+                    ]
+               })
+          );
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: ['*'],
+                    actions: [
+                         "s3:ListAllMyBuckets",
                     ]
                })
           );
