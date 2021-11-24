@@ -227,7 +227,8 @@ class ServiceDeployIAM extends cdk.Stack {
                          "events:DescribeRule",
                          "events:ListRules",
                          "events:DisableRule",
-                         "events:PutTargets"
+                         "events:PutTargets",
+                         "events:RemoveTargets"
                     ]
                })
           );
