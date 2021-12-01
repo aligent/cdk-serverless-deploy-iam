@@ -19,7 +19,7 @@ This ensures all the commands are run inside the serverless-deploy-iam docker co
 
 Add the following to your .bashrc file:
 ```
-alias serverless-deploy-iam='docker run --rm -it --volume ~/.aws:/home/node/.aws --volume ~/.npm:/home/node/.npm --volume $PWD:/app aligent/cdk-serverless-deploy-iam'
+alias serverless-deploy-iam='docker run --rm -it --volume ~/.aws:/home/node/.aws --volume $HOME/.npm:/home/node/.npm --volume $PWD:/app aligent/cdk-serverless-deploy-iam'
 ```
 
 You will then need to reload your bashrc file, either by running `. ~/.bashrc` or starting a new terminal session.
