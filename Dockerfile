@@ -1,4 +1,5 @@
-FROM node:16-alpine3.13
+ARG node_version=16-alpine3.13
+FROM node:${node_version}
 
 RUN mkdir /app /cdk /home/node/.config
 RUN chown node:node /app /cdk /home/node/.config
