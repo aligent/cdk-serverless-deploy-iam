@@ -8,18 +8,30 @@ This stack will provision a CloudFormation IAM role with the required permission
 Services are then deployed referencing the role produced by this stack. This is done by adding the `provider.cfnRole` key to the project's `serverless.yml`.
 This ARN is provided as a stack output.
 
-
 ## Usage
 This repository does not need to be forked, copied or imported. The intention is for it to be deployed *AS IS* into each environment for each service.
 Additional permissions should be added to this stack and feature flagged rather than being added ad hoc to the environment.
 
 This tool is philosophically similar to the [AWS CDK Bootstrap](https://github.com/aws/aws-cdk/blob/master/design/cdk-bootstrap.md) but specific to Aligent services IAM resources.
 
-### Parameters
+### Aliased Command
+This ensures all the commands are run inside the serverless-deploy-iam docker container so that you don't need clone the repo.
+
+Add the following to your .bashrc file:
+```
+alias serverless-deploy-iam='docker run --rm -it --volume ~/.aws:/home/node/.aws --volume $HOME/.npm:/home/node/.npm --volume $PWD:/app aligent/cdk-serverless-deploy-iam'
+```
+
+You will then need to reload your bashrc file, either by running `. ~/.bashrc` or starting a new terminal session.
+
+To deploy the IAM role, provide a profile and service name: `serverless-deploy-iam --profile <profile name> --service <service name>`.
+
+### Cloning the repo
+#### Parameters
 The CDK stack requires the service name to be provided as an environment variable.
 This is the name of the Serverless application.
 
-### Deploying:
+#### Deploying:
 The intention is that this stack is deployed manually using the CDK CLI by an IAM user with admin privileges.
 This should then be the last deployment into the environment from outside automated pipelines.
 
