@@ -2,9 +2,10 @@
 #set -x
 
 APP_ROOT="/app"
+AWS_ROOT="/home/node/.aws"
 
-DOCKER_UID=`stat -c "%u" $APP_ROOT`
-DOCKER_GID=`stat -c "%g" $APP_ROOT`
+DOCKER_UID=`stat -c "%u" $AWS_ROOT`
+DOCKER_GID=`stat -c "%g" $AWS_ROOT`
 
 INCUMBENT_USER=`getent passwd $DOCKER_UID | cut -d: -f1`
 INCUMBENT_GROUP=`getent group $DOCKER_GID | cut -d: -f1`
@@ -17,6 +18,7 @@ groupadd -g ${DOCKER_GID} node
 useradd -g ${DOCKER_GID} --home-dir /home/node -s /bin/bash -u ${DOCKER_UID} node
 
 chown -R node:node /home/node/.config
+chown -R node:node $APP_ROOT
 
 cd $APP_ROOT
 

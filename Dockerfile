@@ -1,8 +1,8 @@
 ARG node_version=16-alpine3.13
 FROM node:${node_version}
 
-RUN mkdir /app /cdk /home/node/.config
-RUN chown node:node /app /cdk /home/node/.config
+RUN mkdir /app /home/node/.config
+RUN chown node:node /app /home/node/.config
 
 RUN apk update && \
     apk add \
@@ -11,7 +11,7 @@ RUN apk update && \
     rm -rf /var/cache/apk/*
 
 USER node
-WORKDIR /cdk
+WORKDIR /app
 
 ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
 
@@ -23,6 +23,9 @@ RUN npm install -g aws-cdk
 ENV PATH="/home/node/.npm-global/bin:${PATH}"
 
 WORKDIR /app
+COPY --chown=node:node cdk.json ./
+COPY --chown=node:node tsconfig.json ./
+COPY --chown=node:node bin ./bin
 USER root
 
 COPY entrypoint.sh /docker-entrypoint.sh
