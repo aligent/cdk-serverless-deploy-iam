@@ -43,6 +43,27 @@ Use the following command to deploy this into an environment:
 SHARED_VPC_ID=<OPTIONAL> AWS_REGION=<AWS_REGION> SERVICE_NAME=<SERVICE_NAME> npx cdk deploy --profile <AWS_PROFILE>
 ```
 
+##### Qualifier Injection
+
+By default the deploy role will have access to [resources](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_resource.html) prepended with the service name, however this may not always suffice.
+In order to work around this, the following environment variables can be provided which allow an arbitrary resource to be added to the IAM statement.
+- CLOUD_FORMATION_QUALIFIER
+- S3_QUALIFIER
+- CLOUD_WATCH_QUALIFIER
+- LAMBDA_QUALIFIER
+- STEP_FUNCTION_QUALIFIER
+- DYNAMO_DB_QUALIFIER
+- IAM_QUALIFIER
+- EVENT_BRIDGE_QUALIFIER
+- API_GATEWAY_QUALIFIER
+- SSM_QUALIFIER
+- SNS_QUALIFIER
+
+##### Example:
+```
+S3_QUALIFIER="some-other-bucket" AWS_REGION=<AWS_REGION> SERVICE_NAME=<SERVICE_NAME> npx cdk deploy --profile <AWS_PROFILE>
+```
+
 ### Next Steps
 Once this finishes a user will be created (ARN in stack output). This user will have the appropriate permissions to assume the CloudFormation role and deploy the service.
 
