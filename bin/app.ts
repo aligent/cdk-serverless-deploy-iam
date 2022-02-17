@@ -27,17 +27,17 @@ class ServiceDeployIAM extends cdk.Stack {
           const accountId = cdk.Stack.of(this).account;
           const region = cdk.Stack.of(this).region
 
-          const cloudFormationResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:cloudformation:${region}:${accountId}:stack/`, [`${serviceName}*`]);
-          const s3BucketResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:s3:::`, [`${serviceName}*`, `${serviceName}*/*`]);
-          const cloudWatchResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:logs:${region}:${accountId}:log-group:`, [`/aws/lambda/${serviceName}*`]);
-          const lambdaResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:lambda:${region}:${accountId}:function:`, [`${serviceName}*`]);
-          const stepFunctionResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:states:${region}:${accountId}:stateMachine:`, [`${serviceName}*`]);
-          const dynamoDbResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:dynamodb:${region}:${accountId}:table/`, [`${serviceName}*`]);
-          const iamResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:iam::${accountId}:role/`, [`${serviceName}*`]);
-          const eventBridgeResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:events:${region}:${accountId}:rule/`, [`${serviceName}*`]);
-          const apiGatewayResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:apigateway:${region}::`, [`/*`]);
-          const ssmDeploymentResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:ssm:${region}:${accountId}:parameter/`, [`${serviceName}*`]);
-          const snsResources = ServiceDeployIAM.formatResourceQualifier(`arn:aws:sns:${region}:${accountId}:`, [`${serviceName}*`]);
+          const cloudFormationResources = ServiceDeployIAM.formatResourceQualifier('CLOUD_FORMATION', `arn:aws:cloudformation:${region}:${accountId}:stack/`, [`${serviceName}*`]);
+          const s3BucketResources = ServiceDeployIAM.formatResourceQualifier('S3', `arn:aws:s3:::`, [`${serviceName}*`, `${serviceName}*/*`]);
+          const cloudWatchResources = ServiceDeployIAM.formatResourceQualifier('CLOUD_WATCH', `arn:aws:logs:${region}:${accountId}:log-group:`, [`/aws/lambda/${serviceName}*`]);
+          const lambdaResources = ServiceDeployIAM.formatResourceQualifier('LAMBDA', `arn:aws:lambda:${region}:${accountId}:function:`, [`${serviceName}*`]);
+          const stepFunctionResources = ServiceDeployIAM.formatResourceQualifier('STEP_FUNCTION', `arn:aws:states:${region}:${accountId}:stateMachine:`, [`${serviceName}*`]);
+          const dynamoDbResources = ServiceDeployIAM.formatResourceQualifier('DYNAMO_DB', `arn:aws:dynamodb:${region}:${accountId}:table/`, [`${serviceName}*`]);
+          const iamResources = ServiceDeployIAM.formatResourceQualifier('IAM', `arn:aws:iam::${accountId}:role/`, [`${serviceName}*`]);
+          const eventBridgeResources = ServiceDeployIAM.formatResourceQualifier('EVENT_BRIDGE', `arn:aws:events:${region}:${accountId}:rule/`, [`${serviceName}*`]);
+          const apiGatewayResources = ServiceDeployIAM.formatResourceQualifier('API_GATEWAY', `arn:aws:apigateway:${region}::`, [`/*`]);
+          const ssmDeploymentResources = ServiceDeployIAM.formatResourceQualifier('SSM', `arn:aws:ssm:${region}:${accountId}:parameter/`, [`${serviceName}*`]);
+          const snsResources = ServiceDeployIAM.formatResourceQualifier('SNS', `arn:aws:sns:${region}:${accountId}:`, [`${serviceName}*`]);
 
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
@@ -399,8 +399,12 @@ class ServiceDeployIAM extends cdk.Stack {
      }
 
      // Takes an array of qualifiers and prepends the prefix to each, returning the resulting array
-     static formatResourceQualifier(prefix: string, qualifiers: string[]): string[] {
-          return qualifiers.map((qualifier) => { return `${prefix}/${qualifier}` })
+     // Tests for injected resource qualifiers and adds these.
+     static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[]): string[] {
+          return [
+               ...qualifiers,
+               ...[process.env[`${serviceName}_QUALIFIER`]]
+               ].map((qualifier) => { return `${prefix}/${qualifier}` })
      }
 
 
