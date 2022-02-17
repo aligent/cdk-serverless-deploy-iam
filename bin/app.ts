@@ -358,6 +358,18 @@ class ServiceDeployIAM extends cdk.Stack {
                })
           );
 
+          // Deploy user must have permission to fetch API keys after the deploy
+          // Generated api key names are random so this cannot be limited to the service at this time
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: [`arn:aws:apigateway:${region}::/apikeys/*`],
+                    actions: [            
+                         "apigateway:GET",
+                    ]
+               })
+          );
+
 
           deployUser.addToGroup(deployGroup);
 
