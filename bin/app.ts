@@ -286,6 +286,10 @@ class ServiceDeployIAM extends cdk.Stack {
                          "cloudformation:DeleteStack",
                          "cloudformation:DescribeStackEvents",
                          "cloudformation:UpdateStack",
+                         "cloudformation:ExecuteChangeSet",
+                         "cloudformation:CreateChangeSet",
+                         "cloudformation:DeleteChangeSet",
+                         "cloudformation:DescribeChangeSet"
                          "cloudformation:ListStackResources",
                          "cloudformation:DescribeStackResource",
                          "cloudformation:DescribeStackResources"
