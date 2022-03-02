@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import * as cdk from '@aws-cdk/core';
 import * as ssm from '@aws-cdk/aws-ssm';
-import { 
-   ManagedPolicy, 
-   Role, 
-   ServicePrincipal, 
-   PolicyStatement, 
+import {
+   ManagedPolicy,
+   Role,
+   ServicePrincipal,
+   PolicyStatement,
    Effect,
    Group,
    User
@@ -70,7 +70,7 @@ class ServiceDeployIAM extends cdk.Stack {
                     new PolicyStatement({
                          effect: Effect.ALLOW,
                          resources: ['*'],
-                         actions: [            
+                         actions: [
                               "ec2:CreateSecurityGroup",
                               "ec2:DescribeSecurityGroups",
                               "ec2:DescribeSubnets",
@@ -101,7 +101,7 @@ class ServiceDeployIAM extends cdk.Stack {
                new PolicyStatement({
                     effect: Effect.ALLOW,
                     resources: cloudWatchResources,
-                    actions: [            
+                    actions: [
                          "logs:CreateLogGroup",
                          "logs:DescribeLogGroup",
                          "logs:DeleteLogGroup",
@@ -119,7 +119,7 @@ class ServiceDeployIAM extends cdk.Stack {
                new PolicyStatement({
                     effect: Effect.ALLOW,
                     resources: lambdaResources,
-                    actions: [            
+                    actions: [
                          "lambda:GetFunction",
                          "lambda:CreateFunction",
                          "lambda:DeleteFunction",
@@ -143,7 +143,7 @@ class ServiceDeployIAM extends cdk.Stack {
                new PolicyStatement({
                     effect: Effect.ALLOW,
                     resources: ['*'],
-                    actions: [            
+                    actions: [
                          "lambda:GetEventSourceMapping",
                          "lambda:ListEventSourceMappings"
                     ]
@@ -160,7 +160,7 @@ class ServiceDeployIAM extends cdk.Stack {
                          }
                     },
                     resources: ['*'],
-                    actions: [            
+                    actions: [
                          "lambda:DeleteEventSourceMapping",
                          "lambda:UpdateEventSourceMapping",
                          "lambda:CreateEventSourceMapping",
@@ -174,7 +174,7 @@ class ServiceDeployIAM extends cdk.Stack {
                new PolicyStatement({
                     effect: Effect.ALLOW,
                     resources: iamResources,
-                    actions: [            
+                    actions: [
                          "iam:PassRole",
                          "iam:CreateRole",
                          "iam:GetRole",
@@ -193,7 +193,7 @@ class ServiceDeployIAM extends cdk.Stack {
                new PolicyStatement({
                     effect: Effect.ALLOW,
                     resources: dynamoDbResources,
-                    actions: [            
+                    actions: [
                          "dynamodb:DescribeTable",
                          "dynamodb:CreateTable",
                          "dynamodb:UpdateTable",
@@ -202,12 +202,12 @@ class ServiceDeployIAM extends cdk.Stack {
                })
           );
 
-          // StepFunctions policy 
+          // StepFunctions policy
           serviceRole.addToPolicy(
                new PolicyStatement({
                     effect: Effect.ALLOW,
                     resources: stepFunctionResources,
-                    actions: [            
+                    actions: [
                          "states:CreateStateMachine",
                          "states:UpdateStateMachine",
                          "states:DeleteStateMachine",
@@ -289,7 +289,7 @@ class ServiceDeployIAM extends cdk.Stack {
                          "cloudformation:ExecuteChangeSet",
                          "cloudformation:CreateChangeSet",
                          "cloudformation:DeleteChangeSet",
-                         "cloudformation:DescribeChangeSet"
+                         "cloudformation:DescribeChangeSet",
                          "cloudformation:ListStackResources",
                          "cloudformation:DescribeStackResource",
                          "cloudformation:DescribeStackResources"
@@ -317,7 +317,7 @@ class ServiceDeployIAM extends cdk.Stack {
                     ]
                })
           );
-          
+
           // S3 bucket policy
           deployGroup.addToPolicy(
                new PolicyStatement({
@@ -347,7 +347,7 @@ class ServiceDeployIAM extends cdk.Stack {
                new PolicyStatement({
                     effect: Effect.ALLOW,
                     resources: ['*'],
-                    actions: [            
+                    actions: [
                          "ssm:DescribeParameters",
                     ]
                })
@@ -357,7 +357,7 @@ class ServiceDeployIAM extends cdk.Stack {
                new PolicyStatement({
                     effect: Effect.ALLOW,
                     resources: ssmDeploymentResources,
-                    actions: [            
+                    actions: [
                          "ssm:GetParameter",
                     ]
                })
@@ -369,7 +369,7 @@ class ServiceDeployIAM extends cdk.Stack {
                new PolicyStatement({
                     effect: Effect.ALLOW,
                     resources: [`arn:aws:apigateway:${region}::/apikeys/*`],
-                    actions: [            
+                    actions: [
                          "apigateway:GET",
                     ]
                })
