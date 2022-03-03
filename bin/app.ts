@@ -11,10 +11,10 @@ import {
    User
 } from '@aws-cdk/aws-iam';
 
-const SERVICE_NAME = process.env.SERVICE_NAME
+const SERVICE_NAME = process.env.SERVICE_NAME ? process.env.SERVICE_NAME : ''
 const SHARED_VPC_ID = process.env.SHARED_VPC_ID
 const STACK_SUFFIX = '-deploy-iam'
-
+const EXPORT_PREFIX = process.env.EXPORT_PREFIX ? process.env.EXPORT_PREFIX : SERVICE_NAME
 class ServiceDeployIAM extends cdk.Stack {
 
      constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -377,20 +377,26 @@ class ServiceDeployIAM extends cdk.Stack {
 
 
           deployUser.addToGroup(deployGroup);
+          
+          // Export CDK Output
+          const export_prefix = !EXPORT_PREFIX.endsWith('-') ? EXPORT_PREFIX.concat("-") : EXPORT_PREFIX
 
-          new cdk.CfnOutput(this, 'DeployUserName', {
+          new cdk.CfnOutput(this, `${export_prefix}DeployUserName`, {
                description: 'PublisherUser',
                value: deployUser.userName,
+               exportName: `${export_prefix}serverless-deployer-username`,
           });
 
-          new cdk.CfnOutput(this, 'DeployRoleArn', {
+          new cdk.CfnOutput(this, `${export_prefix}DeployRoleArn`, {
                value: serviceRole.roleArn,
                description: 'The ARN of the CloudFormation service role',
+               exportName: `${export_prefix}serverless-deployer-role-arn`,
           });
 
-          new cdk.CfnOutput(this, 'Version', {
+          new cdk.CfnOutput(this, `${export_prefix}Version`, {
                value: version,
                description: 'The version of the resources that are currently provisioned in this stack',
+               exportName: `${export_prefix}cdk-stack-version`,
           });
 
           const parameterName = `/serverless-deploy-iam/${serviceName}/version`;
