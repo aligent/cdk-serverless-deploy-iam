@@ -292,7 +292,8 @@ class ServiceDeployIAM extends cdk.Stack {
                          "cloudformation:DescribeChangeSet",
                          "cloudformation:ListStackResources",
                          "cloudformation:DescribeStackResource",
-                         "cloudformation:DescribeStackResources"
+                         "cloudformation:DescribeStackResources",
+                         "cloudformation:GetTemplate"
                     ]
                })
           );
@@ -377,7 +378,7 @@ class ServiceDeployIAM extends cdk.Stack {
 
 
           deployUser.addToGroup(deployGroup);
-          
+
           // Export CDK Output
           const export_prefix = !EXPORT_PREFIX.endsWith('-') ? EXPORT_PREFIX.concat("-") : EXPORT_PREFIX
 
