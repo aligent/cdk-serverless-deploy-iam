@@ -5,6 +5,7 @@ import {
    ManagedPolicy,
    Role,
    ServicePrincipal,
+   CompositePrincipal,
    PolicyStatement,
    Effect,
    Group,
@@ -34,13 +35,16 @@ class ServiceDeployIAM extends cdk.Stack {
           const stepFunctionResources = ServiceDeployIAM.formatResourceQualifier('STEP_FUNCTION', `arn:aws:states:${region}:${accountId}:stateMachine:`, [`${serviceName}*`], "");
           const dynamoDbResources = ServiceDeployIAM.formatResourceQualifier('DYNAMO_DB', `arn:aws:dynamodb:${region}:${accountId}:table`, [`${serviceName}*`]);
           const iamResources = ServiceDeployIAM.formatResourceQualifier('IAM', `arn:aws:iam::${accountId}:role`, [`${serviceName}*`]);
-          const eventBridgeResources = ServiceDeployIAM.formatResourceQualifier('EVENT_BRIDGE', `arn:aws:events:${region}:${accountId}:rule`, [`${serviceName}*`]);
+          const eventBridgeResources = ServiceDeployIAM.formatResourceQualifier('EVENT_BRIDGE', `arn:aws:events:${region}:${accountId}`, [`rule/${serviceName}*`, `event-bus/${serviceName}*`], ":");
           const apiGatewayResources = ServiceDeployIAM.formatResourceQualifier('API_GATEWAY', `arn:aws:apigateway:${region}::`, [`*`]);
           const ssmDeploymentResources = ServiceDeployIAM.formatResourceQualifier('SSM', `arn:aws:ssm:${region}:${accountId}:parameter`, [`${serviceName}*`]);
           const snsResources = ServiceDeployIAM.formatResourceQualifier('SNS', `arn:aws:sns:${region}:${accountId}:`, [`${serviceName}*`]);
 
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
-               assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
+               assumedBy: new CompositePrincipal(
+                    new ServicePrincipal('cloudformation.amazonaws.com'),
+                    new ServicePrincipal('lambda.amazonaws.com')
+               )
           });
 
           // S3 bucket policy
@@ -229,7 +233,9 @@ class ServiceDeployIAM extends cdk.Stack {
                          "events:ListRules",
                          "events:DisableRule",
                          "events:PutTargets",
-                         "events:RemoveTargets"
+                         "events:RemoveTargets",
+                         "events:DeleteRule",
+                         "events:CreateEventBus"
                     ]
                })
           );
