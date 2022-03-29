@@ -5,6 +5,7 @@ import {
    ManagedPolicy,
    Role,
    ServicePrincipal,
+   CompositePrincipal,
    PolicyStatement,
    Effect,
    Group,
@@ -40,7 +41,10 @@ class ServiceDeployIAM extends cdk.Stack {
           const snsResources = ServiceDeployIAM.formatResourceQualifier('SNS', `arn:aws:sns:${region}:${accountId}:`, [`${serviceName}*`]);
 
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
-               assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
+               assumedBy: new CompositePrincipal(
+                    new ServicePrincipal('cloudformation.amazonaws.com'),
+                    new ServicePrincipal('lambda.amazonaws.com')
+               )
           });
 
           // S3 bucket policy
