@@ -420,7 +420,7 @@ class ServiceDeployIAM extends cdk.Stack {
      static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[], delimiter: string = "/"): string[] {
           return [
                ...qualifiers,
-               ...[process.env[`${serviceName}_QUALIFIER`] ?? false]
+               ...process.env[`${serviceName}_QUALIFIER`]?.split(",") || []
                ].filter(Boolean).map((qualifier) => { return `${prefix}${delimiter}${qualifier}` })
      }
 

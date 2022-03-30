@@ -63,6 +63,9 @@ In order to work around this, the following environment variables can be provide
 ```
 S3_QUALIFIER="some-other-bucket" AWS_REGION=<AWS_REGION> SERVICE_NAME=<SERVICE_NAME> npx cdk deploy --profile <AWS_PROFILE>
 ```
+```
+LAMBDA_QUALIFIER="some-lambda,another-lambda" AWS_REGION=<AWS_REGION> SERVICE_NAME=<SERVICE_NAME> npx cdk deploy --profile <AWS_PROFILE>
+```
 
 ### Next Steps
 Once this finishes a user will be created (ARN in stack output). This user will have the appropriate permissions to assume the CloudFormation role and deploy the service.
