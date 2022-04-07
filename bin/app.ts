@@ -12,7 +12,7 @@ import {
    User
 } from '@aws-cdk/aws-iam';
 
-const SERVICE_NAME = process.env.SERVICE_NAME ? process.env.SERVICE_NAME : ''
+const SERVICE_NAME = process.env.SERVICE_NAME ? process.env.SERVICE_NAME : 'unknown-service'
 const SHARED_VPC_ID = process.env.SHARED_VPC_ID
 const STACK_SUFFIX = '-deploy-iam'
 const EXPORT_PREFIX = process.env.EXPORT_PREFIX ? process.env.EXPORT_PREFIX : SERVICE_NAME
