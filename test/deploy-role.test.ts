@@ -1,5 +1,5 @@
 import * as cdk from '@aws-cdk/core';
-import { expect as expectCDK, matchTemplate, MatchStyle, haveResource, haveResourceLike, countResources, objectLike, arrayWith } from '@aws-cdk/assert';
+import { expect as expectCDK, matchTemplate, MatchStyle, haveResource, haveResourceLike, countResources, objectLike, arrayWith, stringLike} from '@aws-cdk/assert';
 import { ServiceDeployIAM } from '../bin/app';
 
 
@@ -19,10 +19,11 @@ test('Creates a deploy user', () => {
      expectCDK(stack).to(haveResource('AWS::IAM::User'));
 });
 
-test('Deploy policy has correct CloudFormation permissions', () => {
+test('Deploy user policy has correct CloudFormation permissions', () => {
      const app = new cdk.App();
      const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
      expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+          PolicyName: stringLike("jestdeployersDefaultPolicy*"),
           PolicyDocument: {
                Statement: arrayWith(
 
@@ -60,10 +61,11 @@ test('Deploy policy has correct CloudFormation permissions', () => {
      }));
 });
 
-test('Deploy policy has correct Lambda permissions', () => {
+test('Deploy user policy has correct Lambda permissions', () => {
      const app = new cdk.App();
      const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
      expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+          PolicyName: stringLike("jestdeployersDefaultPolicy*"),
           PolicyDocument: {
                Statement: arrayWith(
 
