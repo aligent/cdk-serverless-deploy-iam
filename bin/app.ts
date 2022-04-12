@@ -5,13 +5,14 @@ import {
    ManagedPolicy,
    Role,
    ServicePrincipal,
+   CompositePrincipal,
    PolicyStatement,
    Effect,
    Group,
    User
 } from '@aws-cdk/aws-iam';
 
-const SERVICE_NAME = process.env.SERVICE_NAME ? process.env.SERVICE_NAME : ''
+const SERVICE_NAME = process.env.SERVICE_NAME ? process.env.SERVICE_NAME : 'unknown-service'
 const SHARED_VPC_ID = process.env.SHARED_VPC_ID
 const STACK_SUFFIX = '-deploy-iam'
 const EXPORT_PREFIX = process.env.EXPORT_PREFIX ? process.env.EXPORT_PREFIX : SERVICE_NAME
@@ -34,13 +35,17 @@ class ServiceDeployIAM extends cdk.Stack {
           const stepFunctionResources = ServiceDeployIAM.formatResourceQualifier('STEP_FUNCTION', `arn:aws:states:${region}:${accountId}:stateMachine:`, [`${serviceName}*`], "");
           const dynamoDbResources = ServiceDeployIAM.formatResourceQualifier('DYNAMO_DB', `arn:aws:dynamodb:${region}:${accountId}:table`, [`${serviceName}*`]);
           const iamResources = ServiceDeployIAM.formatResourceQualifier('IAM', `arn:aws:iam::${accountId}:role`, [`${serviceName}*`]);
-          const eventBridgeResources = ServiceDeployIAM.formatResourceQualifier('EVENT_BRIDGE', `arn:aws:events:${region}:${accountId}:rule`, [`${serviceName}*`]);
+          const eventBridgeResources = ServiceDeployIAM.formatResourceQualifier('EVENT_BRIDGE', `arn:aws:events:${region}:${accountId}`, [`rule/${serviceName}*`, `event-bus/${serviceName}*`], ":");
           const apiGatewayResources = ServiceDeployIAM.formatResourceQualifier('API_GATEWAY', `arn:aws:apigateway:${region}::`, [`*`]);
           const ssmDeploymentResources = ServiceDeployIAM.formatResourceQualifier('SSM', `arn:aws:ssm:${region}:${accountId}:parameter`, [`${serviceName}*`]);
           const snsResources = ServiceDeployIAM.formatResourceQualifier('SNS', `arn:aws:sns:${region}:${accountId}:`, [`${serviceName}*`], "");
+          const sqsResources = ServiceDeployIAM.formatResourceQualifier('SQS', `arn:aws:sqs:${region}:${accountId}:`, [`${serviceName}*`], "");
 
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
-               assumedBy: new ServicePrincipal('cloudformation.amazonaws.com')
+               assumedBy: new CompositePrincipal(
+                    new ServicePrincipal('cloudformation.amazonaws.com'),
+                    new ServicePrincipal('lambda.amazonaws.com')
+               )
           });
 
           // S3 bucket policy
@@ -229,7 +234,9 @@ class ServiceDeployIAM extends cdk.Stack {
                          "events:ListRules",
                          "events:DisableRule",
                          "events:PutTargets",
-                         "events:RemoveTargets"
+                         "events:RemoveTargets",
+                         "events:DeleteRule",
+                         "events:CreateEventBus"
                     ]
                })
           );
@@ -256,6 +263,28 @@ class ServiceDeployIAM extends cdk.Stack {
                          "sns:CreateTopic",
                          "sns:DeleteTopic",
                          "sns:Subscribe",
+                    ]
+               })
+          );
+
+          // SQS policy
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: sqsResources,
+                    actions: [
+                         "sqs:UntagQueue",
+                         "sqs:RemovePermission",
+                         "sqs:GetQueueUrl",
+                         "sqs:GetQueueAttributes",
+                         "sqs:AddPermission",
+                         "sqs:DeleteQueue",
+                         "sqs:ListQueueTags",
+                         "sqs:SetQueueAttributes",
+                         "sqs:ChangeMessageVisibility",
+                         "sqs:TagQueue",
+                         "sqs:ListDeadLetterSourceQueues",
+                         "sqs:CreateQueue",
                     ]
                })
           );
@@ -376,6 +405,17 @@ class ServiceDeployIAM extends cdk.Stack {
                })
           );
 
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: lambdaResources,
+                    actions: [
+                         "lambda:GetFunction",
+                         "lambda:InvokeFunction"
+                    ]
+               })
+          );
+
 
           deployUser.addToGroup(deployGroup);
 
@@ -414,7 +454,7 @@ class ServiceDeployIAM extends cdk.Stack {
      static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[], delimiter: string = "/"): string[] {
           return [
                ...qualifiers,
-               ...[process.env[`${serviceName}_QUALIFIER`] ?? false]
+               ...process.env[`${serviceName}_QUALIFIER`]?.split(",") || []
                ].filter(Boolean).map((qualifier) => { return `${prefix}${delimiter}${qualifier}` })
      }
 
