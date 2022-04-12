@@ -19,63 +19,65 @@ test('Creates a deploy user', () => {
      expectCDK(stack).to(haveResource('AWS::IAM::User'));
 });
 
-test('Deploy user policy has correct CloudFormation permissions', () => {
-     const app = new cdk.App();
-     const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
-     expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
-          PolicyName: stringLike("jestdeployersDefaultPolicy*"),
-          PolicyDocument: {
-               Statement: arrayWith(
+describe('Deploy user policy', () => {
+     test('has correct CloudFormation permissions', () => {
+          const app = new cdk.App();
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+               PolicyName: stringLike("jestdeployersDefaultPolicy*"),
+               PolicyDocument: {
+                    Statement: arrayWith(
 
-                    objectLike({
-                         Action: "cloudformation:ValidateTemplate",
-                         Effect: "Allow",
-                         Resource: "*"
-                    }),
+                         objectLike({
+                              Action: "cloudformation:ValidateTemplate",
+                              Effect: "Allow",
+                              Resource: "*"
+                         }),
 
-                    objectLike({
-                         Action: [
-                              "cloudformation:CreateStack",
-                              "cloudformation:DescribeStacks",
-                              "cloudformation:DeleteStack",
-                              "cloudformation:DescribeStackEvents",
-                              "cloudformation:UpdateStack",
-                              "cloudformation:ExecuteChangeSet",
-                              "cloudformation:CreateChangeSet",
-                              "cloudformation:DeleteChangeSet",
-                              "cloudformation:DescribeChangeSet",
-                              "cloudformation:ListStackResources",
-                              "cloudformation:DescribeStackResource",
-                              "cloudformation:DescribeStackResources",
-                              "cloudformation:GetTemplate"
-                         ],
-                         Effect: "Allow",
-                         Resource: {
-                              "Fn::Join": [
-                                   "",
-                                   ["arn:aws:cloudformation:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":stack/jest*"]]
-                         }
-                    }),
-               )
-          }
-     }));
-});
+                         objectLike({
+                              Action: [
+                                   "cloudformation:CreateStack",
+                                   "cloudformation:DescribeStacks",
+                                   "cloudformation:DeleteStack",
+                                   "cloudformation:DescribeStackEvents",
+                                   "cloudformation:UpdateStack",
+                                   "cloudformation:ExecuteChangeSet",
+                                   "cloudformation:CreateChangeSet",
+                                   "cloudformation:DeleteChangeSet",
+                                   "cloudformation:DescribeChangeSet",
+                                   "cloudformation:ListStackResources",
+                                   "cloudformation:DescribeStackResource",
+                                   "cloudformation:DescribeStackResources",
+                                   "cloudformation:GetTemplate"
+                              ],
+                              Effect: "Allow",
+                              Resource: {
+                                   "Fn::Join": [
+                                        "",
+                                        ["arn:aws:cloudformation:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":stack/jest*"]]
+                              }
+                         }),
+                    )
+               }
+          }));
+     });
 
-test('Deploy user policy has correct Lambda permissions', () => {
-     const app = new cdk.App();
-     const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
-     expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
-          PolicyName: stringLike("jestdeployersDefaultPolicy*"),
-          PolicyDocument: {
-               Statement: arrayWith(
+     test('has correct Lambda permissions', () => {
+          const app = new cdk.App();
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+               PolicyName: stringLike("jestdeployersDefaultPolicy*"),
+               PolicyDocument: {
+                    Statement: arrayWith(
 
-                    objectLike({
-                         "Action": "lambda:GetFunction",
-                         "Effect": "Allow",
-                         "Resource": {
-                              "Fn::Join": ["",["arn:aws:lambda:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":function:jest*"]]}
-                    }),
-               )
-          }
-     }));
+                         objectLike({
+                              "Action": "lambda:GetFunction",
+                              "Effect": "Allow",
+                              "Resource": {
+                                   "Fn::Join": ["",["arn:aws:lambda:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":function:jest*"]]}
+                         }),
+                    )
+               }
+          }));
+     });
 });
