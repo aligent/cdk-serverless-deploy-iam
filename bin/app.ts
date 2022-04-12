@@ -39,6 +39,7 @@ class ServiceDeployIAM extends cdk.Stack {
           const apiGatewayResources = ServiceDeployIAM.formatResourceQualifier('API_GATEWAY', `arn:aws:apigateway:${region}::`, [`*`]);
           const ssmDeploymentResources = ServiceDeployIAM.formatResourceQualifier('SSM', `arn:aws:ssm:${region}:${accountId}:parameter`, [`${serviceName}*`]);
           const snsResources = ServiceDeployIAM.formatResourceQualifier('SNS', `arn:aws:sns:${region}:${accountId}:`, [`${serviceName}*`]);
+          const sqsResources = ServiceDeployIAM.formatResourceQualifier('SQS', `arn:aws:sqs:${region}:${accountId}:`, [`${serviceName}*`], "");
 
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new CompositePrincipal(
@@ -262,6 +263,28 @@ class ServiceDeployIAM extends cdk.Stack {
                          "sns:CreateTopic",
                          "sns:DeleteTopic",
                          "sns:Subscribe",
+                    ]
+               })
+          );
+
+          // SQS policy
+          serviceRole.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: sqsResources,
+                    actions: [
+                         "sqs:UntagQueue",
+                         "sqs:RemovePermission",
+                         "sqs:GetQueueUrl",
+                         "sqs:GetQueueAttributes",
+                         "sqs:AddPermission",
+                         "sqs:DeleteQueue",
+                         "sqs:ListQueueTags",
+                         "sqs:SetQueueAttributes",
+                         "sqs:ChangeMessageVisibility",
+                         "sqs:TagQueue",
+                         "sqs:ListDeadLetterSourceQueues",
+                         "sqs:CreateQueue",
                     ]
                })
           );
