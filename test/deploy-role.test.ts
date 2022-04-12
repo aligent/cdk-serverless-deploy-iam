@@ -20,6 +20,13 @@ test('Creates a deploy user', () => {
 });
 
 describe('Deploy user policy', () => {
+     test('is created', () => {
+          const app = new cdk.App();
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+               PolicyName: stringLike("jestdeployersDefaultPolicy*"),
+          }));
+     });
      test('has correct CloudFormation permissions', () => {
           const app = new cdk.App();
           const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
@@ -81,3 +88,41 @@ describe('Deploy user policy', () => {
           }));
      });
 });
+
+
+describe('CloudFormation service policy', () => {
+     test('is created', () => {
+          const app = new cdk.App();
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+               PolicyName: stringLike("ServiceRolev1DefaultPolicy*"),
+          }));
+     });
+
+     test('has correct s3 permissions', () => {
+          const app = new cdk.App();
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+               PolicyName: stringLike("ServiceRolev1DefaultPolicy*"),
+               PolicyDocument: {
+                    Statement: arrayWith(
+                         objectLike(
+                              {
+                                   "Action": "s3:*",
+                                   "Effect": "Allow",
+                                   "Resource": [
+                                        "arn:aws:s3:::jest*",
+                                        "arn:aws:s3:::jest*/*"
+                                   ]
+                              }),
+                              objectLike({
+                                   "Action": "s3:ListAllMyBuckets",
+                                   "Effect": "Allow",
+                                   "Resource": "*"
+                              })
+                    )}
+          }));
+     });
+});
+
+
