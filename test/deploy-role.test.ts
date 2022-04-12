@@ -59,3 +59,21 @@ test('Deploy policy has correct CloudFormation permissions', () => {
           }
      }));
 });
+
+test('Deploy policy has correct Lambda permissions', () => {
+     const app = new cdk.App();
+     const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+     expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+          PolicyDocument: {
+               Statement: arrayWith(
+
+                    objectLike({
+                         "Action": "lambda:GetFunction",
+                         "Effect": "Allow",
+                         "Resource": {
+                              "Fn::Join": ["",["arn:aws:lambda:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":function:jest*"]]}
+                    }),
+               )
+          }
+     }));
+});
