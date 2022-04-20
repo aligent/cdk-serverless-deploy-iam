@@ -16,7 +16,7 @@ const SERVICE_NAME = process.env.SERVICE_NAME ? process.env.SERVICE_NAME : 'unkn
 const SHARED_VPC_ID = process.env.SHARED_VPC_ID
 const STACK_SUFFIX = '-deploy-iam'
 const EXPORT_PREFIX = process.env.EXPORT_PREFIX ? process.env.EXPORT_PREFIX : SERVICE_NAME
-class ServiceDeployIAM extends cdk.Stack {
+export class ServiceDeployIAM extends cdk.Stack {
 
      constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
           super(scope, id, props);
