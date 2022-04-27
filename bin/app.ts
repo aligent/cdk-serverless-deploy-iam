@@ -404,18 +404,19 @@ export class ServiceDeployIAM extends cdk.Stack {
                     ]
                })
           );
-
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: lambdaResources,
-                    actions: [
-                         "lambda:GetFunction",
-                         "lambda:InvokeFunction"
-                    ]
-               })
-          );
-
+          
+          if (process.env.ALLOW_DEPLOY_INVOCATION) {
+               deployGroup.addToPolicy(
+                    new PolicyStatement({
+                         effect: Effect.ALLOW,
+                         resources: lambdaResources,
+                         actions: [
+                              "lambda:GetFunction",
+                              "lambda:InvokeFunction"
+                         ]
+                    })
+               );
+          }
 
           deployUser.addToGroup(deployGroup);
 
