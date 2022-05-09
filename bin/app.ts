@@ -401,6 +401,18 @@ export class ServiceDeployIAM extends cdk.Stack {
                     resources: [`arn:aws:apigateway:${region}::/apikeys/*`],
                     actions: [
                          "apigateway:GET",
+                         "apigateway:PATCH",
+                    ]
+               })
+          );
+          
+          // The serverless-api-gateway-throttling requires PATCH access using the deploy user to update maxRequestsPerSecond and maxConcurrentRequests
+          deployGroup.addToPolicy(
+               new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    resources: [`arn:aws:apigateway:${region}::/restapis/*/stages/*`],
+                    actions: [
+                         "apigateway:PATCH",
                     ]
                })
           );
