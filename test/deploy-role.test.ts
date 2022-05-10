@@ -1,5 +1,5 @@
 import * as cdk from '@aws-cdk/core';
-import { expect as expectCDK, matchTemplate, MatchStyle, haveResource, haveResourceLike, countResources, objectLike, arrayWith, stringLike} from '@aws-cdk/assert';
+import { expect as expectCDK, matchTemplate, MatchStyle, haveResource, haveResourceLike, countResources, objectLike, arrayWith, stringLike, notMatching} from '@aws-cdk/assert';
 import { ServiceDeployIAM } from '../bin/app';
 
 
@@ -125,4 +125,46 @@ describe('CloudFormation service policy', () => {
      });
 });
 
+describe('Deploy group invocation permission', () => {
+     test('does not have permission', () => {
+          const app = new cdk.App();
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+               PolicyName: stringLike("*deployersDefaultPolicy*"),
+               PolicyDocument: {
+                    Statement: notMatching(arrayWith(
+                         objectLike(
+                              {
+                                   "Action": [
+                                        "lambda:GetFunction",
+                                        "lambda:InvokeFunction"
+                                   ],
+                                   "Effect": "Allow",
+                                   "Resource": { "Fn::Join": ["",["arn:aws:lambda:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":function:jest*"]] }
+                              })
+                    ))}
+          }));
+     });
+
+     test('has permission', () => {
+          process.env.ALLOW_DEPLOY_INVOCATION = 'true';
+          const app = new cdk.App();
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+               PolicyName: stringLike("*deployersDefaultPolicy*"),
+               PolicyDocument: {
+                    Statement: arrayWith(
+                         objectLike(
+                              {
+                                   "Action": [
+                                        "lambda:GetFunction",
+                                        "lambda:InvokeFunction"
+                                   ],
+                                   "Effect": "Allow",
+                                   "Resource": { "Fn::Join": ["",["arn:aws:lambda:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":function:jest*"]] }
+                              })
+                    )}
+          }));
+     });
+});
 
